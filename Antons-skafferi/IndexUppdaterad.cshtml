@@ -1,0 +1,132 @@
+﻿@model IEnumerable<AntonsSkafferi.Models.Meny>
+
+@{
+    //Titel på sidan
+    ViewBag.Title = "Meny";
+
+    //Sorterar på datum istället för Id
+    IEnumerable<AntonsSkafferi.Models.Meny> QuerySortByDateThenById = Model.OrderBy(Meny => Meny.Date).ThenBy(Meny => Meny.Id);
+
+    //Datum och dag
+    var CurrentDay = DateTime.Today.ToString("yyyy-MM-dd");
+    var CurrentWeekday = DateTime.Today.DayOfWeek.ToString();
+
+    //Variabler för att kolla om dag redan är utskriven
+    int mon = 0;
+    int tue = 0;
+    int wed = 0;
+    int thu = 0;
+    int fri = 0;
+
+    //Sätter ShowFromWeekDay till dagens dag
+    System.DateTime ShowFromWeekDay = System.DateTime.Today;
+
+    //Backa antalet dagar till en måndag.
+    int y = 0;
+    if (CurrentWeekday == "Monday") { y = 0; ShowFromWeekDay = ShowFromWeekDay.AddDays(y); };
+    if (CurrentWeekday == "Tuesday") { y = -1; ShowFromWeekDay = ShowFromWeekDay.AddDays(y); };
+    if (CurrentWeekday == "Wednesday") { y = -2; ShowFromWeekDay = ShowFromWeekDay.AddDays(y); };
+    if (CurrentWeekday == "Thursday") { y = -3; ShowFromWeekDay = ShowFromWeekDay.AddDays(y); };
+    if (CurrentWeekday == "Friday") { y = -4; ShowFromWeekDay = ShowFromWeekDay.AddDays(y); };
+    if (CurrentWeekday == "Saturday") { y = -5; ShowFromWeekDay = ShowFromWeekDay.AddDays(y); };
+    if (CurrentWeekday == "Sunday") { y = -6; ShowFromWeekDay = ShowFromWeekDay.AddDays(y); };
+    
+    var FridayOfWeek = ShowFromWeekDay.AddDays(4).ToString("yyyy-MM-dd");
+}
+
+<h2>Veckans Meny</h2>
+
+@if (User.IsInRole("Admin"))
+{
+    <p>
+        @Html.ActionLink("Lägg till maträtt", "Create")
+        | @Html.ActionLink("Planerad meny", "Planned")
+    </p>
+}
+<br />
+<p>
+    Dagens datum: @CurrentDay <!-- (@CurrentWeekday) -->
+    <br />
+    Visar: @ShowFromWeekDay.ToString("yyyy-MM-dd") - @FridayOfWeek
+</p>
+<br />
+<table width="500">
+    <tr style="font-weight: 700;">
+        <th>
+            
+        </th>
+        <th>
+            Maträtt
+        </th>
+        <th>
+            Beskrivning
+        </th>
+        <th>
+            Pris
+        </th>
+        <!-- <th></th> -->
+    </tr>
+
+@foreach (var item in QuerySortByDateThenById)
+{
+    //Funktion som visar fem dagar framåt
+    for (int i = 0; i < 5; i++)
+    {
+        System.DateTime nextday = ShowFromWeekDay.AddDays(i);
+        var nextday_temp = nextday.ToString("yyyy-MM-dd");
+
+        
+        if (item.Date == nextday_temp)
+        { 
+                    <tr>
+                        <td style="text-decoration: underline;">
+                        @{
+                            if(i==0 && mon==0){
+                              var Day = "Måndag";
+                              <span>@Day</span>
+                                mon++;
+                            }
+                            if(i==1 && tue==0){
+                                var Day = "Tisdag";
+                                <span>@Day</span>
+                                tue++;
+                            }
+                            if(i==2 && wed==0){
+                                var Day = "Onsdag";
+                                <span>@Day</span>
+                                 wed++;
+                            }
+                            if(i==3 && thu==0){
+                                var Day = "Torsdag";
+                                <span>@Day</span>
+                                 thu++;
+                            }
+                            if(i==4 && fri==0){
+                                var Day = "Fredag";
+                                <span>@Day</span>
+                                 fri++;
+                            }
+                         }
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Food)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Description)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Price)
+                        </td>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <td>
+                                @Html.ActionLink("Redigera", "Edit", new { id = item.Id }) |
+                                @Html.ActionLink("Detaljerat", "Details", new { id = item.Id })
+                                @Html.ActionLink("Ta bort", "Delete", new { id = item.Id })
+                            </td>
+                         }
+                    </tr>
+        }
+    }
+}
+</table>
